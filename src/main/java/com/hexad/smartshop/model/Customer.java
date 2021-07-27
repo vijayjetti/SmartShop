@@ -1,23 +1,29 @@
 package com.hexad.smartshop.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import com.hexad.smartshop.utils.AppUtils;
 
 @Entity
 @Table(name = "CUSTOMER_DETAIL")
@@ -31,40 +37,45 @@ public class Customer implements Serializable {
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "TABLE_GEN")
 	private Integer customerId;
 
-	@NotEmpty
+	@NotEmpty(message="{NotEmpty.customer.customerName}")
 	@Column(name = "CUSTOMER_NAME")
 	private String customerName;
 
-	@NotEmpty
+	@NotEmpty(message="{NotEmpty.customer.emailId}")
+	@Email(message = "{customer.emailId}")
 	@Column(name = "EMAIL_ID")
 	private String emailId;
 
-	@NotEmpty
+	@NotEmpty(message="{NotEmpty.customer.phoneNumber}")
 	@Column(name = "PHONE_NUMBER")
 	private String phoneNumber;
-//(1, home city1, 560036, Karnataka1, home street1, null)
-//	@NotEmpty
-//	@OneToMany(fetch = FetchType.LAZY, mappedBy = "customer", cascade = CascadeType.ALL)
 	
-//	private List<Address> addresses = new ArrayList<Address>();
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="Sample")
-	private List<Address> addresses ;
+	@Length(min = 8, message = "{customer.password}")
+	@NotEmpty(message="{NotEmpty.customer.password}")
+	private String password;
+	
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = Address.class)
+	private List<Address> addresses =new ArrayList<>();
 
 	@Temporal(value = TemporalType.DATE)
 	@Column(name = "REGISTRATION_DATE")
 	private Date dateOfRegistration;
+	
+	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = Address.class)
+	private List<Order> listOfOrders = new ArrayList<Order>();
+	
+	@OneToOne(mappedBy="customer",fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = Cart.class)
+	private Cart cart;
 
+	
 	public Customer() {
 	}
 
-//	public Customer(Integer customerId, String customerName, String emailId, String phoneNumber, List<Address> addresses) {
-	public Customer(String customerName, String emailId, String phoneNumber, List<Address> addresses) {
-//		this.customerId = customerId;
+	public Customer(String customerName, String emailId, String phoneNumber) {
 		this.customerName = customerName;
 		this.emailId = emailId;
 		this.phoneNumber = phoneNumber;
-		this.addresses = addresses;
+		dateOfRegistration = AppUtils.getCurrentDate();
 	}
 
 	public Integer getCustomerId() {
@@ -98,6 +109,13 @@ public class Customer implements Serializable {
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public List<Address> getAddresses() {
 		return addresses;
@@ -111,16 +129,38 @@ public class Customer implements Serializable {
 		return dateOfRegistration;
 	}
 
-	/*public Address getAddresses() {
-		return addresses;
-	}
-
-	public void setAddresses(Address addresses) {
-		this.addresses = addresses;
-	}*/
-
 	public void setDateOfRegistration(Date dateOfRegistration) {
 		this.dateOfRegistration = dateOfRegistration;
 	}
+	
+	public List<Order> getListOfOrders() {
+		return listOfOrders;
+	}
 
+	public void setListOfOrders(List<Order> listOfOrders) {
+		this.listOfOrders = listOfOrders;
+	}
+
+	public Cart getCart() {
+		return cart;
+	}
+
+	public void setCart(Cart cart) {
+		this.cart = cart;
+	}
+
+	public void addAddress(Address address) {
+		addresses.add(address);
+		address.setCustomer(this);
+	}
+
+	public void removeAddress(Address address) {
+		addresses.remove(address);
+		address.setCustomer(null);
+	}
+	
+	public void addOrder(Order order) {
+		listOfOrders.add(order);
+		order.setCustomer(this);
+	}
 }

@@ -1,15 +1,14 @@
 package com.hexad.smartshop.service;
 
-import com.hexad.smartshop.model.Address;
+import com.hexad.smartshop.exception.CustomerException;
 import com.hexad.smartshop.model.Customer;
 
 public interface ICustomerDetailsService {
 
-	public String registerCustomer(Customer customer);
+	public Customer registerCustomer(Customer customer)throws CustomerException;
 
-	public Customer updateCustomer(Customer customer);
+	public Customer updateCustomer(Customer customer)throws CustomerException;
 
-	public Customer getCustomerById(Integer customerId);
+	public Customer getCustomerById(Integer customerId)throws CustomerException;
 
-	public String registerAddress(Address customer);
 }
